@@ -8,7 +8,7 @@
 #  automatically by sc).
 
 MODNAME           = vector
-VERSION           = 1
+VERSION           = 42
 
 TARGET            = $(MODNAME).image
 TARGET_DEBUG      = $(MODNAME).image.debug
@@ -52,7 +52,7 @@ FROM $(OBJECTS) TO $(TARGET_DEBUG) LIB $(LIBS) $(LDFLAGS)
 classinit.o:    classinit.asm vector_rev.rev classbase.i
 endcode.o:      endcode.asm
 
-classbase.o:    classbase.c classbase.h vectorclass.h
+classbase.o:    classbase.c classbase.h vector.h
 dispatch.o:     dispatch.c classbase.h classdata.h class_iprotos.h
 attrs.o:        attrs.c classbase.h classdata.h class_iprotos.h
 cache.o:        cache.c classbase.h classdata.h class_iprotos.h
@@ -72,9 +72,9 @@ clean:
         -$(RM) $(TARGET) $(TARGET_DEBUG) $(MODNAME).map
 
 install:        $(TARGET)
-        copy $(TARGET) SYS:classes/images/$(MODNAME).image
+        copy $(TARGET) SYS:Classes/Images/$(MODNAME).image
         # copy vectorclass.h INCLUDE:classes
         avail flush
 
 headers:
-        copy vectorclass.h include:classes
+        copy vector.h //SDK/Include_h/images/vector.h

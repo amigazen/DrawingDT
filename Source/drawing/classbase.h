@@ -68,6 +68,9 @@
 #include <pragmas/datatypes_pragmas.h>
 #include <pragmas/iffparse_pragmas.h>
 
+/* amiga.lib linkage (BOOPSI helpers, NewList et al.); link with LIB:amiga.lib. */
+#include <proto/alib.h>
+
 #include "drawingclass.h"
 #include "vectorbridge.h"
 
@@ -121,21 +124,6 @@ struct ClassBase
 #define DiskFontBase        cb->cb_DiskFontBase
 #define VectorImageBase     cb->cb_VectorImageBase
 
-
-/*****************************************************************************/
-/* BOOPSI helpers from SAS/C amiga.lib.                                       */
-/*****************************************************************************/
-
-ULONG __stdargs DoMethodA       (Object *obj, Msg message);
-ULONG __stdargs DoMethod        (Object *obj, unsigned long MethodID, ...);
-ULONG __stdargs DoSuperMethodA  (struct IClass *cl, Object *obj, Msg message);
-ULONG __stdargs DoSuperMethod   (struct IClass *cl, Object *obj,
-                                 unsigned long MethodID, ...);
-ULONG __stdargs CoerceMethodA   (struct IClass *cl, Object *obj, Msg message);
-ULONG __stdargs CoerceMethod    (struct IClass *cl, Object *obj,
-                                 unsigned long MethodID, ...);
-ULONG __stdargs SetSuperAttrs   (struct IClass *cl, Object *obj,
-                                 unsigned long Tag1, ...);
 
 void kprintf (void *, ...);
 

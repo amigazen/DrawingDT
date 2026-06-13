@@ -92,14 +92,6 @@ struct ClassBase
 #define ASM       __asm
 #define REG(x)    register __ ## x
 
-ULONG __stdargs DoMethodA       (Object *obj, Msg message);
-ULONG __stdargs DoMethod        (Object *obj, unsigned long MethodID, ...);
-ULONG __stdargs DoSuperMethodA  (struct IClass *cl, Object *obj, Msg message);
-ULONG __stdargs DoSuperMethod   (struct IClass *cl, Object *obj,
-                                 unsigned long MethodID, ...);
-ULONG __stdargs CoerceMethod    (struct IClass *cl, Object *obj,
-                                 unsigned long MethodID, ...);
-
 #include "classdata.h"
 #include "vrport.h"
 #include "class_iprotos.h"
