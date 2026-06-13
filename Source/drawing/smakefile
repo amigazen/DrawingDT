@@ -1,0 +1,93 @@
+#  drawing.datatype build script (SAS/C smake)
+#
+#  Builds the loadable BOOPSI superclass: an unstripped $(TARGET_DEBUG)
+#  carrying symbols, then the stripped, installable $(TARGET).  "smake
+#  install" copies $(TARGET) to SYS:Classes/Datatypes/; "smake headers"
+#  installs drawingclass.h / drawingclass.i to //SDK/Include_h/datatypes/.
+#
+#  Compiler options live in the SCOPTIONS file in this directory (read
+#  automatically by sc).
+
+MODNAME           = drawing
+VERSION           = 42
+
+TARGET            = $(MODNAME).datatype
+TARGET_DEBUG      = $(MODNAME).datatype.debug
+
+CC                = sc
+ASM               = asm
+LD                = slink
+RM                = delete force quiet
+
+LDFLAGS           = ADDSYM SC SD MAP $(MODNAME).map HLSXF PLAIN SWIDTH 16
+LDFLAGS_STRIP     = ND
+
+C_SOURCES         = classbase.c dispatch.c attrs.c layout.c vectorbridge.c \
+                    displaylist.c primitives.c hittest.c navigate.c \
+                    writeobj.c print.c stream.c fixed.c
+ASM_SOURCES       = classinit.asm endcode.asm
+
+OBJECTS           = classinit.o classbase.o dispatch.o attrs.o layout.o \
+                    vectorbridge.o displaylist.o primitives.o hittest.o \
+                    navigate.o writeobj.o print.o stream.o fixed.o \
+                    endcode.o
+
+STARTUP           =
+LIBS              = LIB:debug.lib LIB:amiga.lib LIB:scm.lib LIB:sc.lib
+
+# Final, stripped class (the installable artefact).
+$(TARGET):      $(TARGET_DEBUG)
+                $(LD) FROM $(TARGET_DEBUG) TO $(TARGET) $(LDFLAGS_STRIP)
+
+# Unstripped build with symbols.
+$(TARGET_DEBUG): $(OBJECTS) $(LIBS)
+                $(LD) <with <
+FROM $(STARTUP) $(OBJECTS) TO $(TARGET_DEBUG) LIB $(LIBS) $(LDFLAGS)
+<
+
+.c.o:
+        $(CC) $*.c
+
+.asm.o:
+        $(ASM) $*.asm
+
+# Dependencies
+classinit.o:    classinit.asm $(MODNAME)_rev.rev classbase.i
+endcode.o:      endcode.asm
+
+classbase.o:    classbase.c classbase.h drawingclass.h
+dispatch.o:     dispatch.c   classbase.h classdata.h class_iprotos.h
+attrs.o:        attrs.c      classbase.h classdata.h class_iprotos.h
+layout.o:       layout.c     classbase.h classdata.h class_iprotos.h
+vectorbridge.o: vectorbridge.c classbase.h classdata.h vectorbridge.h
+displaylist.o:  displaylist.c classbase.h classdata.h class_iprotos.h
+primitives.o:   primitives.c classbase.h classdata.h class_iprotos.h
+hittest.o:      hittest.c    classbase.h classdata.h class_iprotos.h
+navigate.o:     navigate.c   classbase.h classdata.h class_iprotos.h
+writeobj.o:     writeobj.c   classbase.h classdata.h class_iprotos.h
+print.o:        print.c      classbase.h classdata.h class_iprotos.h
+stream.o:       stream.c     classbase.h classdata.h class_iprotos.h
+fixed.o:        fixed.c      classbase.h classdata.h class_iprotos.h
+
+protos:
+        mkproto $(C_SOURCES) to class_iprotos.h
+
+version:
+        @BumpRev $(VERSION) $(MODNAME)_rev
+
+clean:
+        -$(RM) \#?.o \#?.bak \#?.lnk
+        -$(RM) $(TARGET) $(TARGET_DEBUG) $(MODNAME).map
+
+$(MODNAME).doc: classbase.c dispatch.c
+        @Autodoc >$(MODNAME).doc classbase.c dispatch.c
+
+install:        $(TARGET)
+        copy $(TARGET) SYS:classes/datatypes/$(MODNAME).datatype
+        #copy drawingclass.h INCLUDE:datatypes/
+        #copy drawingclass.i INCLUDE:datatypes/
+        avail flush
+
+headers:
+        copy /include/datatypes/drawingclass.h //SDK/Include_h/datatypes/drawingclass.h
+        #copy /include/datatypes/drawingclass.i //SDK/Include_i/datatypes/drawingclass.i

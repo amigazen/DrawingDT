@@ -1,0 +1,94 @@
+#  dr2d.datatype build script (SAS/C smake)
+#
+#  Loadable BOOPSI subclass of drawing.datatype.  Parses IFF DR2D files
+#  via iffparse.library and feeds the display list to the superclass.
+#
+#  Artefacts:
+#    dr2d.datatype        - the class, stripped (install to SYS:Classes/Datatypes/)
+#    dr2d.datatype.debug  - the unstripped build with symbols
+#    DR2D                 - IFF DTYP descriptor (install to DEVS:DataTypes/)
+#    mkdesc               - build-time tool that emits the descriptor (not installed)
+#
+#  Compiler options live in the SCOPTIONS file in this directory (read
+#  automatically by sc).
+
+MODNAME           = dr2d
+VERSION           = 45
+
+TARGET            = $(MODNAME).datatype
+TARGET_DEBUG      = $(MODNAME).datatype.debug
+DESC              = DR2D
+MKDESC            = mkdesc
+
+CC                = sc
+ASM               = asm
+LD                = slink
+RM                = delete force quiet
+
+LDFLAGS           = ADDSYM SC SD MAP $(MODNAME).map HLSXF PLAIN SWIDTH 16
+LDFLAGS_STRIP     = ND
+
+C_SOURCES         = classbase.c dispatch.c load.c ieee.c
+ASM_SOURCES       = classinit.asm endcode.asm
+
+OBJECTS           = classinit.o classbase.o dispatch.o load.o ieee.o \
+                    endcode.o
+
+STARTUP           =
+LIBS              = LIB:debug.lib LIB:amiga.lib LIB:scm.lib LIB:sc.lib
+
+# Build the class and its descriptor.
+all:            $(TARGET) $(DESC)
+
+# Final, stripped class (the installable artefact).
+$(TARGET):      $(TARGET_DEBUG)
+                $(LD) FROM $(TARGET_DEBUG) TO $(TARGET) $(LDFLAGS_STRIP)
+
+# Unstripped build with symbols.
+$(TARGET_DEBUG): $(OBJECTS) $(LIBS)
+                $(LD) <with <
+FROM $(STARTUP) $(OBJECTS) TO $(TARGET_DEBUG) LIB $(LIBS) $(LDFLAGS)
+<
+
+# IFF DTYP descriptor.  mkdesc is an ordinary C program (standard startup
+# and sc.lib), so link it through the SC frontend (LINK) rather than the
+# no-startup slink rule used for the class; it then runs on the build host
+# and writes the DR2D descriptor binary.
+$(DESC):        $(MKDESC)
+                $(MKDESC) $(DESC)
+
+$(MKDESC):      mkdesc.o
+                $(CC) mkdesc.o LINK NOICONS TO $(MKDESC)
+
+.c.o:
+        $(CC) $*.c
+
+.asm.o:
+        $(ASM) $*.asm
+
+# Dependencies
+classinit.o:    classinit.asm $(MODNAME)_rev.rev classbase.i
+endcode.o:      endcode.asm
+
+classbase.o:    classbase.c classbase.h dr2dclass.h
+dispatch.o:     dispatch.c   classbase.h class_iprotos.h
+load.o:         load.c       classbase.h class_iprotos.h dr2dclass.h
+ieee.o:         ieee.c       classbase.h
+mkdesc.o:       mkdesc.c     $(MODNAME)_rev.h
+
+version:
+        @BumpRev $(VERSION) $(MODNAME)_rev
+
+clean:
+        -$(RM) \#?.o \#?.bak \#?.lnk
+        -$(RM) $(TARGET) $(TARGET_DEBUG) $(MODNAME).map
+        -$(RM) $(MKDESC) $(DESC)
+
+install:        $(TARGET) $(DESC)
+        copy $(TARGET) SYS:classes/datatypes/$(MODNAME).datatype
+        copy $(DESC) DEVS:DataTypes/$(DESC)
+        # copy dr2dclass.h INCLUDE:datatypes
+        avail flush >nil:
+
+headers:
+        copy dr2dclass.h include:datatypes

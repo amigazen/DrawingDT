@@ -1,0 +1,80 @@
+#  vector.image build script (SAS/C smake)
+#
+#  Builds the loadable BOOPSI imageclass: an unstripped $(TARGET_DEBUG)
+#  carrying symbols, then the stripped, installable $(TARGET).  "smake
+#  install" copies $(TARGET) to SYS:Classes/Images/.
+#
+#  Compiler options live in the SCOPTIONS file in this directory (read
+#  automatically by sc).
+
+MODNAME           = vector
+VERSION           = 1
+
+TARGET            = $(MODNAME).image
+TARGET_DEBUG      = $(MODNAME).image.debug
+
+CC                = sc
+ASM               = asm
+LD                = slink
+RM                = delete force quiet
+
+LDFLAGS           = ADDSYM SC SD MAP $(MODNAME).map HLSXF PLAIN SWIDTH 16
+LDFLAGS_STRIP     = ND
+
+C_SOURCES         = classbase.c dispatch.c attrs.c cache.c source.c pool.c \
+                    render.c vrport.c displaylist.c primitives.c hittest.c \
+                    fixed.c richtext.c glyphengine.c
+ASM_SOURCES       = classinit.asm endcode.asm
+
+OBJECTS           = classinit.o classbase.o dispatch.o attrs.o cache.o \
+                    source.o pool.o render.o vrport.o displaylist.o primitives.o \
+                    hittest.o fixed.o richtext.o glyphengine.o endcode.o
+
+LIBS              = LIB:amiga.lib LIB:scm.lib LIB:sc.lib
+
+# Final, stripped image (the installable artefact).
+$(TARGET):      $(TARGET_DEBUG)
+                $(LD) FROM $(TARGET_DEBUG) TO $(TARGET) $(LDFLAGS_STRIP)
+
+# Unstripped build with symbols.
+$(TARGET_DEBUG): $(OBJECTS) $(LIBS)
+                $(LD) <with <
+FROM $(OBJECTS) TO $(TARGET_DEBUG) LIB $(LIBS) $(LDFLAGS)
+<
+
+.c.o:
+        $(CC) $*.c
+
+.asm.o:
+        $(ASM) $*.asm
+
+# Dependencies
+classinit.o:    classinit.asm vector_rev.rev classbase.i
+endcode.o:      endcode.asm
+
+classbase.o:    classbase.c classbase.h vectorclass.h
+dispatch.o:     dispatch.c classbase.h classdata.h class_iprotos.h
+attrs.o:        attrs.c classbase.h classdata.h class_iprotos.h
+cache.o:        cache.c classbase.h classdata.h class_iprotos.h
+source.o:       source.c classbase.h classdata.h class_iprotos.h
+pool.o:         pool.c classbase.h classdata.h class_iprotos.h
+render.o:       render.c classbase.h classdata.h class_iprotos.h vrport.h
+vrport.o:       vrport.c classbase.h classdata.h class_iprotos.h vrport.h
+displaylist.o:  displaylist.c classbase.h classdata.h class_iprotos.h
+primitives.o:   primitives.c classbase.h classdata.h class_iprotos.h
+hittest.o:      hittest.c classbase.h classdata.h class_iprotos.h
+fixed.o:        fixed.c classbase.h classdata.h class_iprotos.h
+richtext.o:     richtext.c richtext.h classbase.h classdata.h class_iprotos.h
+glyphengine.o:  glyphengine.c glyphengine.h classbase.h classdata.h class_iprotos.h
+
+clean:
+        -$(RM) \#?.o \#?.bak \#?.lnk
+        -$(RM) $(TARGET) $(TARGET_DEBUG) $(MODNAME).map
+
+install:        $(TARGET)
+        copy $(TARGET) SYS:classes/images/$(MODNAME).image
+        # copy vectorclass.h INCLUDE:classes
+        avail flush
+
+headers:
+        copy vectorclass.h include:classes

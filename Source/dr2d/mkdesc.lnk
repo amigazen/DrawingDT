@@ -1,0 +1,6 @@
+FROM LIB:c.o "mkdesc.o"
+TO "mkdesc"
+LIB LIB:sc.lib LIB:amiga.lib
+QUIET
+NOICONS
+
