@@ -51,6 +51,8 @@
 /* pipeline is verified end to end.                                          */
 /*****************************************************************************/
 
+#ifdef VECTOR_DEBUG
+
 static void vdbg (struct ClassBase *cb, STRPTR text)
 {
     if (DOSBase && text)
@@ -72,6 +74,14 @@ static void vdbgHex (struct ClassBase *cb, STRPTR label, LONG value)
     if (DOSBase && label)
         Printf ("[vector] %s0x%08lx\n", (LONG) label, value);
 }
+
+#else   /* !VECTOR_DEBUG: helpers compile away to nothing */
+
+#define vdbg(cb,text)         ((void) 0)
+#define vdbgL(cb,label,value) ((void) 0)
+#define vdbgHex(cb,label,value) ((void) 0)
+
+#endif  /* VECTOR_DEBUG */
 
 
 /*****************************************************************************/

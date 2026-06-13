@@ -29,6 +29,8 @@ static Object *newObject (struct ClassBase *cb, Class *cl, Object *o,
 static ULONG   disposeObject (struct ClassBase *cb, Class *cl, Object *o);
 
 
+#ifdef DR2D_DEBUG
+
 static void dbgPut (struct ClassBase *cb, STRPTR text)
 {
     if (DOSBase && text)
@@ -38,6 +40,12 @@ static void dbgPut (struct ClassBase *cb, STRPTR text)
         PutStr ("\n");
     }
 }
+
+#else   /* !DR2D_DEBUG: helper compiles away to nothing */
+
+#define dbgPut(cb,text)   ((void) 0)
+
+#endif  /* DR2D_DEBUG */
 
 
 /*****************************************************************************/

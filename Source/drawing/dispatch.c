@@ -116,6 +116,8 @@ static void    fireRefresh    (struct ClassBase *cb, Class *cl, Object *o,
                                struct GadgetInfo *ginfo);
 
 
+#ifdef DRAWING_DEBUG
+
 static void dbgPut (struct ClassBase *cb, STRPTR text)
 {
     if (DOSBase && text)
@@ -134,6 +136,13 @@ static void dbgPutLong (struct ClassBase *cb, STRPTR label, LONG value)
         Printf ("[drawing] %s%ld\n", (LONG) label, value);
     }
 }
+
+#else   /* !DRAWING_DEBUG: helpers compile away to nothing */
+
+#define dbgPut(cb,text)            ((void) 0)
+#define dbgPutLong(cb,label,value) ((void) 0)
+
+#endif  /* DRAWING_DEBUG */
 
 
 /*****************************************************************************/

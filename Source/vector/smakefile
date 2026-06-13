@@ -71,6 +71,10 @@ clean:
         -$(RM) \#?.o \#?.bak \#?.lnk
         -$(RM) $(TARGET) $(TARGET_DEBUG) $(MODNAME).map
 
+release:        $(TARGET)
+        copy $(TARGET) //SYS/Classes/Images/$(MODNAME).image
+        # copy vectorclass.h INCLUDE:classes
+
 install:        $(TARGET)
         copy $(TARGET) SYS:Classes/Images/$(MODNAME).image
         # copy vectorclass.h INCLUDE:classes

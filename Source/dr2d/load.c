@@ -52,6 +52,8 @@
 #define IEEE_ANGLE_FIXED(x)  dr2dIEEEToFixed ((ULONG)(x))
 
 
+#ifdef DR2D_DEBUG
+
 static void dbgPut (struct ClassBase *cb, STRPTR text)
 {
     if (DOSBase && text)
@@ -86,6 +88,14 @@ static void dbgPutID (struct ClassBase *cb, STRPTR label, LONG id)
         Printf ("[dr2d] %s%s\n", (LONG) label, (LONG) buf);
     }
 }
+
+#else   /* !DR2D_DEBUG: helpers compile away to nothing */
+
+#define dbgPut(cb,text)            ((void) 0)
+#define dbgPutLong(cb,label,value) ((void) 0)
+#define dbgPutID(cb,label,id)      ((void) 0)
+
+#endif  /* DR2D_DEBUG */
 
 
 static LONG declareStopChunk (struct ClassBase *cb, struct IFFHandle *iff,
